@@ -1,0 +1,11 @@
+# Producción y montaje
+
+1. Define el motor, la duración y la composición. Crea una escena de prueba con luz, cámara y personaje antes de producir el resto. Las plantillas proporcionan módulos que se integran en el proyecto nuevo.
+2. Registra cada toma con frame inicial, final, puntos de cámara, objetivo, óptica y eventos sonoros. Trabaja a 30 fps y exporta el tema en escenas independientes.
+3. Para personajes planos, exporta PNG numerados con alfa desde Remotion. Usa `blender/normales_2d.py` para generar normales y asigna color, alfa y normales a las cartas de Blender. Si la serie se recortó, normaliza sus nombres a partir de cero y rellena el final con el último cuadro válido para evitar texturas magenta.
+4. Separa cámara e iluminación de las poses. Para un diálogo, usa la pista silábica como guía para entrar antes del habla y mantener la reacción unos cuadros después. Para una acción, usa anticipación, impacto de 2–3 cuadros y asentamiento. Captura al menos un cuadro antes, uno durante y uno después al revisar.
+5. Para un inserto, acerca la cámara lo suficiente para leer la acción, pero evita que el objeto salga del cuadro. Corta a una reacción si el objeto desaparece. Usa luces de recorte y ambientación discreta. En Blender, conserva el origen local al aplicar escala si la pieza va a caer o girar.
+6. Ilumina según el lugar, aporta profundidad con paralaje y contraste atmosférico y usa contorno cuando mejore la lectura. En Remotion, ordena tinta, desenfoque, bloom, mapeo tonal y gradación. Escala los valores en píxeles según la altura de salida.
+7. Solicita efectos y modelos con licencias compatibles. `herramientas/recursos.py` permite buscar y descargar modelos, texturas y HDRI de Poly Haven y ambientCG. Conserva los recursos descargados en tu espacio de producción.
+8. Sincroniza la voz con palabras o eventos. Revisa la lectura con y sin música. Usa sonidos originales y ambientes por lugar. Mantén la inteligibilidad y comprueba el nivel integrado y el pico.
+9. Monta y verifica. Para medir cortes y movimiento usa `herramientas/medir_30fps.py`. Para revisar la pista vocal usa `herramientas/medir_voz.py`. Comprueba el resultado con `ffprobe -v error -show_streams video.mp4` y `ffmpeg -v error -xerror -i video.mp4 -f null -`.
