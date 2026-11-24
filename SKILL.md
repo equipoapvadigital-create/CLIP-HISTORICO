@@ -7,6 +7,8 @@ description: Crea shorts narrativos históricos o bíblicos en español, con gui
 
 Empieza por el tema, la audiencia, el estilo y la duración. Respeta las decisiones previas de la persona. Trabaja en la carpeta que haya elegido y guarda por separado el guion, la voz, las escenas, los renders intermedios y el MP4 final.
 
+Durante la producción utiliza modelos, materiales y grabaciones locales. La comprobación de fuentes se puede hacer con material entregado por la persona.
+
 ## Guion
 
 - Verifica los datos con fuentes fiables. Distingue un relato transmitido, una dramatización y un hecho documentado. Guarda las fuentes con el guion.

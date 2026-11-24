@@ -23,7 +23,7 @@ Uso:
 Salidas: voz_final.wav, palabras_final.json, frases.json, tramos.json (qué tono va dónde: lo usa la mezcla).
 """
 import argparse, difflib, json, os, re, subprocess, unicodedata
-import numpy as np, torch, torchaudio as ta, librosa
+from pathlib import Path
 
 # tono: emoción y guía de Chatterbox + procesado. st = semitonos, tempo >1 = más rápido, db = volumen,
 # eq: None | "cerca" (susurro: sin graves, presencia) | "cuerpo" (graves y calidez) | "frio" (sin brillo),
@@ -74,7 +74,24 @@ ap.add_argument("--solo", default=None); ap.add_argument("--semilla", type=int, 
 ap.add_argument("--entre", type=float, default=None, help="pausa base entre líneas (s); por defecto la del estilo")
 ap.add_argument("--voz-ref", default=None, help="wav de 10–20 s de la voz del narrador (con permiso de su dueño): Chatterbox la clona")
 ap.add_argument("--estilo", default="narrador", help="forma de narrar (ESTILOS): ref3 = la referencia del oeste que eligió el usuario")
-a = ap.parse_args(); os.makedirs(a.sal, exist_ok=True)
+a = ap.parse_args()
+
+def modelo_local(variable, archivo):
+    ubicacion = os.environ.get(variable)
+    if not ubicacion:
+        ap.error(f"Indica una carpeta local mediante {variable}.")
+    carpeta = Path(ubicacion).expanduser().resolve()
+    if not (carpeta / archivo).is_file():
+        ap.error(f"Falta {archivo} en la carpeta local indicada en {variable}.")
+    return carpeta
+
+modelo_tts = modelo_local("CHATTERBOX_DIR", "t3_mtl23ls_v2.safetensors")
+modelo_asr = modelo_local("WHISPER_MODEL", "model.bin")
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+import numpy as np, torch, torchaudio as ta, librosa
+os.makedirs(a.sal, exist_ok=True)
 # ESTILOS de narración, MEDIDOS con herramientas/medir_voz.py (se copia la FORMA de narrar, no el timbre de nadie):
 #   (~194 Hz contra 143 nuestra), entonación más viva (0.39 contra 0.33 st por cuadro), ~4.6 sílabas/s.
 ESTILOS = {
@@ -146,15 +163,8 @@ def norm(t):
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS   # noqa: E402
 from faster_whisper import WhisperModel                     # noqa: E402
 _dev = "cuda" if torch.cuda.is_available() else "cpu"
-# los pesos en una carpeta local (bajados con curl): no depende de la caché de Hugging Face, que se puede romper
-_LOCAL = os.environ.get("CHATTERBOX_DIR", "")
-if os.path.exists(os.path.join(_LOCAL, "t3_mtl23ls_v2.safetensors")):
-    from pathlib import Path
-    tts = ChatterboxMultilingualTTS.from_local(Path(_LOCAL), _dev)
-else:
-    tts = ChatterboxMultilingualTTS.from_pretrained(device=_dev)
-_W = os.environ.get("WHISPER_MODEL", "small")
-asr = WhisperModel(_W, device="cpu", compute_type="int8")
+tts = ChatterboxMultilingualTTS.from_local(modelo_tts, _dev)
+asr = WhisperModel(str(modelo_asr), device="cpu", compute_type="int8", local_files_only=True)
 SR = tts.sr
 def a16k(x): return ta.functional.resample(torch.from_numpy(x)[None], SR, 16000)[0].numpy().astype(np.float32)
 
